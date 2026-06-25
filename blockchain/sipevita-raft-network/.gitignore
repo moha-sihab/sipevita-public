@@ -1,0 +1,17 @@
+# Generated crypto material — ignore all sub-dirs except cryptogen definition
+organizations/*
+!organizations/cryptogen/
+organizations/cryptogen/*
+!organizations/cryptogen/crypto-config.yaml
+
+channel-artifacts/
+system-genesis-block/
+wallet-raft/*
+!wallet-raft/
+!wallet-raft/appUser.id
+logs/
+*.key
+*.pem
+.env
+.env.*
+!*.example

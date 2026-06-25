@@ -1,0 +1,68 @@
+# crypto-config.yaml — SIPEVITA Raft Network
+# Generates MSP and TLS material for 4 peer organizations and 1 orderer organization.
+#
+# Organizations:
+#   Org1MSP — ATR/BPN Pusat       — org1.sipevita.example.com
+#   Org2MSP — BPN Provinsi        — org2.sipevita.example.com
+#   Org3MSP — BPN Kabupaten/Kota  — org3.sipevita.example.com
+#   Org4MSP — Auditor/Validator   — org4.sipevita.example.com
+#   OrdererMSP — Raft orderers    — sipevita.example.com
+#
+# Run: cryptogen generate --config=organizations/cryptogen/crypto-config.yaml --output=organizations/
+# Do not commit generated material. peerOrganizations/ and ordererOrganizations/ are gitignored.
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: sipevita.example.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer1
+        SANS:
+          - localhost
+      - Hostname: orderer2
+        SANS:
+          - localhost
+      - Hostname: orderer3
+        SANS:
+          - localhost
+
+PeerOrgs:
+  - Name: Org1
+    Domain: org1.sipevita.example.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        SANS:
+          - localhost
+    Users:
+      Count: 1
+
+  - Name: Org2
+    Domain: org2.sipevita.example.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        SANS:
+          - localhost
+    Users:
+      Count: 1
+
+  - Name: Org3
+    Domain: org3.sipevita.example.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        SANS:
+          - localhost
+    Users:
+      Count: 1
+
+  - Name: Org4
+    Domain: org4.sipevita.example.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        SANS:
+          - localhost
+    Users:
+      Count: 1

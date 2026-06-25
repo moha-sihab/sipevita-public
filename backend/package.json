@@ -1,0 +1,42 @@
+{
+  "name": "sipevita-backend",
+  "version": "1.0.0",
+  "description": "Backend API for SIPEVITA",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "dev:raft": "node --env-file=.env.raft src/server.js"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "js,json",
+    "legacyWatch": true
+  },
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.4",
+    "@hyperledger/fabric-gateway": "^1.11.0",
+    "@supabase/supabase-js": "^2.107.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "js-yaml": "^4.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "multer": "^2.2.0",
+    "pinata": "^2.5.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

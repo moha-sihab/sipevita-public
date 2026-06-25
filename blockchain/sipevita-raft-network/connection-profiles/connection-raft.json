@@ -1,0 +1,151 @@
+{
+    "name": "sipevita-raft-network",
+    "version": "1.0.0",
+    "description": "Connection profile for SIPEVITA Raft Network. 4 orgs, 4 peers, 3 etcdraft orderers. Dedicated host ports (17051-20051 peers, 17050/18050/19050 orderers). NOTE: discovery.asLocalhost:true is incompatible with dedicated host ports; use asLocalhost:false or disabled discovery when connecting via this profile.",
+    "client": {
+        "organization": "Org1",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "300"
+                },
+                "orderer": "300"
+            }
+        }
+    },
+    "channels": {
+        "mychannel": {
+            "orderers": [
+                "orderer1.sipevita.example.com",
+                "orderer2.sipevita.example.com",
+                "orderer3.sipevita.example.com"
+            ],
+            "peers": {
+                "peer0.org1.sipevita.example.com": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer0.org2.sipevita.example.com": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": false
+                },
+                "peer0.org3.sipevita.example.com": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": false
+                },
+                "peer0.org4.sipevita.example.com": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": false
+                }
+            }
+        }
+    },
+    "organizations": {
+        "Org1": {
+            "mspid": "Org1MSP",
+            "peers": [
+                "peer0.org1.sipevita.example.com"
+            ]
+        },
+        "Org2": {
+            "mspid": "Org2MSP",
+            "peers": [
+                "peer0.org2.sipevita.example.com"
+            ]
+        },
+        "Org3": {
+            "mspid": "Org3MSP",
+            "peers": [
+                "peer0.org3.sipevita.example.com"
+            ]
+        },
+        "Org4": {
+            "mspid": "Org4MSP",
+            "peers": [
+                "peer0.org4.sipevita.example.com"
+            ]
+        }
+    },
+    "orderers": {
+        "orderer1.sipevita.example.com": {
+            "url": "grpcs://localhost:17050",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICZzCCAg2gAwIBAgIQD5JPL2GFwR1eBBeXQmqaXDAKBggqhkjOPQQDAjB+MQsw\nCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEdMBsGA1UEChMUc2lwZXZpdGEuZXhhbXBsZS5jb20xIzAhBgNVBAMT\nGnRsc2NhLnNpcGV2aXRhLmV4YW1wbGUuY29tMB4XDTI2MDYxNDA4MDEwMFoXDTM2\nMDYxMTA4MDEwMFowfjELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWEx\nFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xHTAbBgNVBAoTFHNpcGV2aXRhLmV4YW1w\nbGUuY29tMSMwIQYDVQQDExp0bHNjYS5zaXBldml0YS5leGFtcGxlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEcSwaTXBv2Bv8x81EbYeaRStHCnrt/avauX\n5kR++lBpKhH5V1QdqJn/pyy51ZNyT5SqJnaVWmzpbJa3l7NspoSjbTBrMA4GA1Ud\nDwEB/wQEAwIBpjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0T\nAQH/BAUwAwEB/zApBgNVHQ4EIgQgfJZoYP42ekVaeTO98g3qU3jD7EboEi4sZ2B4\npdSJ934wCgYIKoZIzj0EAwIDSAAwRQIgDqp8pR/iCu/mrT7PuMilM6LWCrIGgV7M\n7pM3ylf7D3sCIQDxoB3V42fTfqI0CxkXwea+/WHc/uu8vFgUf3CXzqLM9Q==\n-----END CERTIFICATE-----"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "orderer1.sipevita.example.com",
+                "hostnameOverride": "orderer1.sipevita.example.com"
+            }
+        },
+        "orderer2.sipevita.example.com": {
+            "url": "grpcs://localhost:18050",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICZzCCAg2gAwIBAgIQD5JPL2GFwR1eBBeXQmqaXDAKBggqhkjOPQQDAjB+MQsw\nCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEdMBsGA1UEChMUc2lwZXZpdGEuZXhhbXBsZS5jb20xIzAhBgNVBAMT\nGnRsc2NhLnNpcGV2aXRhLmV4YW1wbGUuY29tMB4XDTI2MDYxNDA4MDEwMFoXDTM2\nMDYxMTA4MDEwMFowfjELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWEx\nFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xHTAbBgNVBAoTFHNpcGV2aXRhLmV4YW1w\nbGUuY29tMSMwIQYDVQQDExp0bHNjYS5zaXBldml0YS5leGFtcGxlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEcSwaTXBv2Bv8x81EbYeaRStHCnrt/avauX\n5kR++lBpKhH5V1QdqJn/pyy51ZNyT5SqJnaVWmzpbJa3l7NspoSjbTBrMA4GA1Ud\nDwEB/wQEAwIBpjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0T\nAQH/BAUwAwEB/zApBgNVHQ4EIgQgfJZoYP42ekVaeTO98g3qU3jD7EboEi4sZ2B4\npdSJ934wCgYIKoZIzj0EAwIDSAAwRQIgDqp8pR/iCu/mrT7PuMilM6LWCrIGgV7M\n7pM3ylf7D3sCIQDxoB3V42fTfqI0CxkXwea+/WHc/uu8vFgUf3CXzqLM9Q==\n-----END CERTIFICATE-----"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "orderer2.sipevita.example.com",
+                "hostnameOverride": "orderer2.sipevita.example.com"
+            }
+        },
+        "orderer3.sipevita.example.com": {
+            "url": "grpcs://localhost:19050",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICZzCCAg2gAwIBAgIQD5JPL2GFwR1eBBeXQmqaXDAKBggqhkjOPQQDAjB+MQsw\nCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEdMBsGA1UEChMUc2lwZXZpdGEuZXhhbXBsZS5jb20xIzAhBgNVBAMT\nGnRsc2NhLnNpcGV2aXRhLmV4YW1wbGUuY29tMB4XDTI2MDYxNDA4MDEwMFoXDTM2\nMDYxMTA4MDEwMFowfjELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWEx\nFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xHTAbBgNVBAoTFHNpcGV2aXRhLmV4YW1w\nbGUuY29tMSMwIQYDVQQDExp0bHNjYS5zaXBldml0YS5leGFtcGxlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEcSwaTXBv2Bv8x81EbYeaRStHCnrt/avauX\n5kR++lBpKhH5V1QdqJn/pyy51ZNyT5SqJnaVWmzpbJa3l7NspoSjbTBrMA4GA1Ud\nDwEB/wQEAwIBpjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0T\nAQH/BAUwAwEB/zApBgNVHQ4EIgQgfJZoYP42ekVaeTO98g3qU3jD7EboEi4sZ2B4\npdSJ934wCgYIKoZIzj0EAwIDSAAwRQIgDqp8pR/iCu/mrT7PuMilM6LWCrIGgV7M\n7pM3ylf7D3sCIQDxoB3V42fTfqI0CxkXwea+/WHc/uu8vFgUf3CXzqLM9Q==\n-----END CERTIFICATE-----"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "orderer3.sipevita.example.com",
+                "hostnameOverride": "orderer3.sipevita.example.com"
+            }
+        }
+    },
+    "peers": {
+        "peer0.org1.sipevita.example.com": {
+            "url": "grpcs://localhost:17051",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICfjCCAiSgAwIBAgIRAPL5NW98WBRuDF9s/VZftk0wCgYIKoZIzj0EAwIwgYgx\nCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1TYW4g\nRnJhbmNpc2NvMSIwIAYDVQQKExlvcmcxLnNpcGV2aXRhLmV4YW1wbGUuY29tMSgw\nJgYDVQQDEx90bHNjYS5vcmcxLnNpcGV2aXRhLmV4YW1wbGUuY29tMB4XDTI2MDYx\nNDA4MDEwMFoXDTM2MDYxMTA4MDEwMFowgYgxCzAJBgNVBAYTAlVTMRMwEQYDVQQI\nEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMSIwIAYDVQQKExlv\ncmcxLnNpcGV2aXRhLmV4YW1wbGUuY29tMSgwJgYDVQQDEx90bHNjYS5vcmcxLnNp\ncGV2aXRhLmV4YW1wbGUuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZ/UU\nbEP5sRe8jVKvI74zlo5GcEYC4vcqGKvKmWpdfj05NTVOf+pYvvP6uxMHfJod1em3\nOHdAhAi84N+M/H51lKNtMGswDgYDVR0PAQH/BAQDAgGmMB0GA1UdJQQWMBQGCCsG\nAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MCkGA1UdDgQiBCAhKebe\nOtItbGo8lUt5m9EVyCbxq62yivpYGxiqMp4igzAKBggqhkjOPQQDAgNIADBFAiBk\nizTlhFsGUqIk+M5XiPdAJuKeU4M/H9tUrVYV6MXpngIhAOQFM1H2BRtW8n8os91g\nQmjdWIEqDTW0hdz+pBA4hHsQ\n-----END CERTIFICATE-----"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.org1.sipevita.example.com",
+                "hostnameOverride": "peer0.org1.sipevita.example.com"
+            }
+        },
+        "peer0.org2.sipevita.example.com": {
+            "url": "grpcs://localhost:18051",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICfTCCAiOgAwIBAgIQYyfh6iihBrO/Be0gUQNbfjAKBggqhkjOPQQDAjCBiDEL\nMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG\ncmFuY2lzY28xIjAgBgNVBAoTGW9yZzIuc2lwZXZpdGEuZXhhbXBsZS5jb20xKDAm\nBgNVBAMTH3Rsc2NhLm9yZzIuc2lwZXZpdGEuZXhhbXBsZS5jb20wHhcNMjYwNjE0\nMDgwMTAwWhcNMzYwNjExMDgwMTAwWjCBiDELMAkGA1UEBhMCVVMxEzARBgNVBAgT\nCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xIjAgBgNVBAoTGW9y\nZzIuc2lwZXZpdGEuZXhhbXBsZS5jb20xKDAmBgNVBAMTH3Rsc2NhLm9yZzIuc2lw\nZXZpdGEuZXhhbXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATYdnVX\nhAi1il/R/QwFoYMSuQOjEmrf6CsNlzNzCPgs/XBchgYmre38OG5ly5Kh0lcCc7gJ\nxvTcEAR+oGZ+4KYKo20wazAOBgNVHQ8BAf8EBAMCAaYwHQYDVR0lBBYwFAYIKwYB\nBQUHAwIGCCsGAQUFBwMBMA8GA1UdEwEB/wQFMAMBAf8wKQYDVR0OBCIEIOPRPhxI\nPFS7AN7bLZemxRPXc4wN/avprge+LouoxqaGMAoGCCqGSM49BAMCA0gAMEUCIQDj\nMSNzQ/7STSAQCQOCwlnyC+JveWa7tPLsXCodV/KS4AIgBfFPsgsvAj6E3Zdhmx9m\ngWbsz+QUSkDk0ZSWQ6wDy+Q=\n-----END CERTIFICATE-----"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.org2.sipevita.example.com",
+                "hostnameOverride": "peer0.org2.sipevita.example.com"
+            }
+        },
+        "peer0.org3.sipevita.example.com": {
+            "url": "grpcs://localhost:19051",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICfTCCAiOgAwIBAgIQVCtA1Knft5YBJXt0pltoODAKBggqhkjOPQQDAjCBiDEL\nMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG\ncmFuY2lzY28xIjAgBgNVBAoTGW9yZzMuc2lwZXZpdGEuZXhhbXBsZS5jb20xKDAm\nBgNVBAMTH3Rsc2NhLm9yZzMuc2lwZXZpdGEuZXhhbXBsZS5jb20wHhcNMjYwNjE0\nMDgwMTAwWhcNMzYwNjExMDgwMTAwWjCBiDELMAkGA1UEBhMCVVMxEzARBgNVBAgT\nCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xIjAgBgNVBAoTGW9y\nZzMuc2lwZXZpdGEuZXhhbXBsZS5jb20xKDAmBgNVBAMTH3Rsc2NhLm9yZzMuc2lw\nZXZpdGEuZXhhbXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARKU5h2\nI5cgd8t204Tf9fSCcWjvPbfjEViJ0fQl62+SbbPa/BRIplh56Lw6NIom2c1ADbRz\nqLpDC0eKSyg6Hgy/o20wazAOBgNVHQ8BAf8EBAMCAaYwHQYDVR0lBBYwFAYIKwYB\nBQUHAwIGCCsGAQUFBwMBMA8GA1UdEwEB/wQFMAMBAf8wKQYDVR0OBCIEIIIo/NIw\nF8JeKCRzGNyEcaIQYE+H4pfafde4gJFQi3n4MAoGCCqGSM49BAMCA0gAMEUCIBhs\n7/qFp1V133Dg/frLTBBl5OP2emMtUI7lNP/NhFj6AiEA+OgcOCVqmPCPlt9q5UQW\nKK4EuGp1hV3Rg2C19yt3HQA=\n-----END CERTIFICATE-----"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.org3.sipevita.example.com",
+                "hostnameOverride": "peer0.org3.sipevita.example.com"
+            }
+        },
+        "peer0.org4.sipevita.example.com": {
+            "url": "grpcs://localhost:20051",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICfTCCAiOgAwIBAgIQag4iIWd4r4zzAdgsJ/AIcDAKBggqhkjOPQQDAjCBiDEL\nMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG\ncmFuY2lzY28xIjAgBgNVBAoTGW9yZzQuc2lwZXZpdGEuZXhhbXBsZS5jb20xKDAm\nBgNVBAMTH3Rsc2NhLm9yZzQuc2lwZXZpdGEuZXhhbXBsZS5jb20wHhcNMjYwNjE0\nMDgwMTAwWhcNMzYwNjExMDgwMTAwWjCBiDELMAkGA1UEBhMCVVMxEzARBgNVBAgT\nCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xIjAgBgNVBAoTGW9y\nZzQuc2lwZXZpdGEuZXhhbXBsZS5jb20xKDAmBgNVBAMTH3Rsc2NhLm9yZzQuc2lw\nZXZpdGEuZXhhbXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASpNPeV\nPt+D/t25hj2D/Rl8ooGSU6ZCk3mMywN6SAEpnAf+AQ7xgjBS4UNlttMrF7+aQzoA\n961fZrI5fAfAAmr0o20wazAOBgNVHQ8BAf8EBAMCAaYwHQYDVR0lBBYwFAYIKwYB\nBQUHAwIGCCsGAQUFBwMBMA8GA1UdEwEB/wQFMAMBAf8wKQYDVR0OBCIEINkg3A/I\nOdskia0rEtY1v0Geo+dL6jNYeIGRUCztRyfoMAoGCCqGSM49BAMCA0gAMEUCIEra\nUPynWjRdOX+Pr7Zqv0D6YKVvDhFgR7yOMOBngWMdAiEAvKTm3oLf2afbN3UlmEys\n4nsXYIYlPjfWlyV/6/okCz4=\n-----END CERTIFICATE-----"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.org4.sipevita.example.com",
+                "hostnameOverride": "peer0.org4.sipevita.example.com"
+            }
+        }
+    }
+}

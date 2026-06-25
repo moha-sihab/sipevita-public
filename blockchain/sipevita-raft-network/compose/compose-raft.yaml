@@ -1,0 +1,413 @@
+# compose-raft.yaml — SIPEVITA Raft Network Docker Compose topology
+#
+# 4 peer organizations (Org1–Org4 MSP) + 1 orderer org (OrdererMSP, 3 Raft nodes)
+# Docker network:   sipevita_raft
+# Project name:     sipevita-raft
+#
+# Run from project root:
+#   docker compose -f compose/compose-raft.yaml -p sipevita-raft up -d
+#
+# Host port strategy (dedicated, does not conflict with test-network):
+#   Org1 peer:    17051 (gRPC), 17444 (ops)
+#   Org2 peer:    18051 (gRPC), 18444 (ops)
+#   Org3 peer:    19051 (gRPC), 19444 (ops)
+#   Org4 peer:    20051 (gRPC), 20444 (ops)
+#   orderer1:     17050 (gRPC), 17053 (admin), 17443 (ops)
+#   orderer2:     18050 (gRPC), 18053 (admin), 18443 (ops)
+#   orderer3:     19050 (gRPC), 19053 (admin), 19443 (ops)
+#
+# Internal Docker ports remain standard: peers 7051/7052/9444, orderers 7050/7053/9443
+# Bind-mount paths are relative to compose/ (one level below project root).
+# Do not start chaincode containers in this file.
+# Do not reference test-network volumes, networks, or container names.
+
+name: sipevita-raft
+
+###############################################################################
+# Named volumes — one per node, never shared
+###############################################################################
+volumes:
+  peer0_org1_data:
+  peer0_org2_data:
+  peer0_org3_data:
+  peer0_org4_data:
+  orderer1_data:
+  orderer2_data:
+  orderer3_data:
+
+###############################################################################
+# Docker network
+###############################################################################
+networks:
+  sipevita_raft:
+    name: sipevita_raft
+    driver: bridge
+
+###############################################################################
+# Services
+###############################################################################
+services:
+
+  # ---------------------------------------------------------------------------
+  # orderer1.sipevita.example.com
+  # ---------------------------------------------------------------------------
+  orderer1.sipevita.example.com:
+    container_name: orderer1.sipevita.example.com
+    image: hyperledger/fabric-orderer:2.5.15
+    labels:
+      service: sipevita-raft
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      # Cluster TLS (used for orderer-to-orderer Raft communication)
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      # Bootstrap method — none means osnadmin channel join is used (Fabric 2.5 channel participation)
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      # Channel participation API (Fabric 2.5 — required for osnadmin channel join)
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      # Admin endpoint
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      # Operations and metrics
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /root
+    command: orderer
+    volumes:
+      - ../organizations/ordererOrganizations/sipevita.example.com/orderers/orderer1.sipevita.example.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sipevita.example.com/orderers/orderer1.sipevita.example.com/tls:/var/hyperledger/orderer/tls
+      - orderer1_data:/var/hyperledger/production/orderer
+    ports:
+      - 17050:7050
+      - 17053:7053
+      - 17443:9443
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo '' > /dev/tcp/127.0.0.1/7050 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sipevita_raft
+
+  # ---------------------------------------------------------------------------
+  # orderer2.sipevita.example.com
+  # ---------------------------------------------------------------------------
+  orderer2.sipevita.example.com:
+    container_name: orderer2.sipevita.example.com
+    image: hyperledger/fabric-orderer:2.5.15
+    labels:
+      service: sipevita-raft
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /root
+    command: orderer
+    volumes:
+      - ../organizations/ordererOrganizations/sipevita.example.com/orderers/orderer2.sipevita.example.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sipevita.example.com/orderers/orderer2.sipevita.example.com/tls:/var/hyperledger/orderer/tls
+      - orderer2_data:/var/hyperledger/production/orderer
+    ports:
+      - 18050:7050
+      - 18053:7053
+      - 18443:9443
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo '' > /dev/tcp/127.0.0.1/7050 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sipevita_raft
+
+  # ---------------------------------------------------------------------------
+  # orderer3.sipevita.example.com
+  # ---------------------------------------------------------------------------
+  orderer3.sipevita.example.com:
+    container_name: orderer3.sipevita.example.com
+    image: hyperledger/fabric-orderer:2.5.15
+    labels:
+      service: sipevita-raft
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /root
+    command: orderer
+    volumes:
+      - ../organizations/ordererOrganizations/sipevita.example.com/orderers/orderer3.sipevita.example.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sipevita.example.com/orderers/orderer3.sipevita.example.com/tls:/var/hyperledger/orderer/tls
+      - orderer3_data:/var/hyperledger/production/orderer
+    ports:
+      - 19050:7050
+      - 19053:7053
+      - 19443:9443
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo '' > /dev/tcp/127.0.0.1/7050 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sipevita_raft
+
+  # ---------------------------------------------------------------------------
+  # peer0.org1.sipevita.example.com  (Org1MSP — ATR/BPN Pusat)
+  # ---------------------------------------------------------------------------
+  peer0.org1.sipevita.example.com:
+    container_name: peer0.org1.sipevita.example.com
+    image: hyperledger/fabric-peer:2.5.15
+    labels:
+      service: sipevita-raft
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      # TLS
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer identity
+      - CORE_PEER_ID=peer0.org1.sipevita.example.com
+      - CORE_PEER_ADDRESS=peer0.org1.sipevita.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.sipevita.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      # MSP
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      # Gossip — single peer per org: bootstrap to self
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.sipevita.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.sipevita.example.com:7051
+      # Services
+      - CORE_PEER_GATEWAY_ENABLED=true
+      - CORE_PEER_DISCOVERY_ENABLED=true
+      # Operations
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      # Chaincode execution
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+      # Chaincode container runtime (Docker-in-Docker via host socket)
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=sipevita_raft
+    working_dir: /root
+    command: peer node start
+    volumes:
+      - ../organizations/peerOrganizations/org1.sipevita.example.com/peers/peer0.org1.sipevita.example.com:/etc/hyperledger/fabric
+      - ./peercfg:/etc/hyperledger/peercfg
+      - peer0_org1_data:/var/hyperledger/production
+      - /var/run/docker.sock:/host/var/run/docker.sock
+    ports:
+      - 17051:7051
+      - 17444:9444
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo '' > /dev/tcp/127.0.0.1/7051 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sipevita_raft
+
+  # ---------------------------------------------------------------------------
+  # peer0.org2.sipevita.example.com  (Org2MSP — BPN Provinsi)
+  # ---------------------------------------------------------------------------
+  peer0.org2.sipevita.example.com:
+    container_name: peer0.org2.sipevita.example.com
+    image: hyperledger/fabric-peer:2.5.15
+    labels:
+      service: sipevita-raft
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.org2.sipevita.example.com
+      - CORE_PEER_ADDRESS=peer0.org2.sipevita.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org2.sipevita.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.sipevita.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.sipevita.example.com:7051
+      - CORE_PEER_GATEWAY_ENABLED=true
+      - CORE_PEER_DISCOVERY_ENABLED=true
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=sipevita_raft
+    working_dir: /root
+    command: peer node start
+    volumes:
+      - ../organizations/peerOrganizations/org2.sipevita.example.com/peers/peer0.org2.sipevita.example.com:/etc/hyperledger/fabric
+      - ./peercfg:/etc/hyperledger/peercfg
+      - peer0_org2_data:/var/hyperledger/production
+      - /var/run/docker.sock:/host/var/run/docker.sock
+    ports:
+      - 18051:7051
+      - 18444:9444
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo '' > /dev/tcp/127.0.0.1/7051 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sipevita_raft
+
+  # ---------------------------------------------------------------------------
+  # peer0.org3.sipevita.example.com  (Org3MSP — BPN Kabupaten/Kota)
+  # ---------------------------------------------------------------------------
+  peer0.org3.sipevita.example.com:
+    container_name: peer0.org3.sipevita.example.com
+    image: hyperledger/fabric-peer:2.5.15
+    labels:
+      service: sipevita-raft
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.org3.sipevita.example.com
+      - CORE_PEER_ADDRESS=peer0.org3.sipevita.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org3.sipevita.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_LOCALMSPID=Org3MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.sipevita.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org3.sipevita.example.com:7051
+      - CORE_PEER_GATEWAY_ENABLED=true
+      - CORE_PEER_DISCOVERY_ENABLED=true
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=sipevita_raft
+    working_dir: /root
+    command: peer node start
+    volumes:
+      - ../organizations/peerOrganizations/org3.sipevita.example.com/peers/peer0.org3.sipevita.example.com:/etc/hyperledger/fabric
+      - ./peercfg:/etc/hyperledger/peercfg
+      - peer0_org3_data:/var/hyperledger/production
+      - /var/run/docker.sock:/host/var/run/docker.sock
+    ports:
+      - 19051:7051
+      - 19444:9444
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo '' > /dev/tcp/127.0.0.1/7051 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sipevita_raft
+
+  # ---------------------------------------------------------------------------
+  # peer0.org4.sipevita.example.com  (Org4MSP — Auditor/Validator)
+  # ---------------------------------------------------------------------------
+  peer0.org4.sipevita.example.com:
+    container_name: peer0.org4.sipevita.example.com
+    image: hyperledger/fabric-peer:2.5.15
+    labels:
+      service: sipevita-raft
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.org4.sipevita.example.com
+      - CORE_PEER_ADDRESS=peer0.org4.sipevita.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org4.sipevita.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_LOCALMSPID=Org4MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org4.sipevita.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org4.sipevita.example.com:7051
+      - CORE_PEER_GATEWAY_ENABLED=true
+      - CORE_PEER_DISCOVERY_ENABLED=true
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=sipevita_raft
+    working_dir: /root
+    command: peer node start
+    volumes:
+      - ../organizations/peerOrganizations/org4.sipevita.example.com/peers/peer0.org4.sipevita.example.com:/etc/hyperledger/fabric
+      - ./peercfg:/etc/hyperledger/peercfg
+      - peer0_org4_data:/var/hyperledger/production
+      - /var/run/docker.sock:/host/var/run/docker.sock
+    ports:
+      - 20051:7051
+      - 20444:9444
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo '' > /dev/tcp/127.0.0.1/7051 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sipevita_raft
