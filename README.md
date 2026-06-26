@@ -194,16 +194,16 @@ Setelah env Supabase disiapkan, masuk ke SQL Editor Supabase dan
 menyiapkan tabel aplikasi. Di repository ini referensi database berada di:
 
 ```text
-backend/database/table.txt
-backend/database/migrations.txt
+backend/database/01-table.txt
+backend/database/02-migrations.txt
 ```
 
 Urutan :
 
-1. Jalankan schema utama berdasarkan `backend/database/table.txt`.
-2. Jalankan migration tambahan dari `backend/database/migrations.txt`.
+1. Jalankan schema utama berdasarkan `backend/database/01-table.txt`.
+2. Jalankan migration tambahan dari `backend/database/02-migrations.txt`.
 
-Catatan: `table.txt` adalah referensi schema hasil export. Jika SQL Editor
+Catatan: `01-table.txt` adalah referensi schema hasil export. Jika SQL Editor
 menolak bagian tertentu seperti enum atau urutan constraint, sesuaikan SQL-nya
 terlebih dahulu agar bisa dijalankan sebagai schema awal Supabase.
 
