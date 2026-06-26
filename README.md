@@ -68,12 +68,12 @@ Konfigurasi Fabric lokal yang kami pakai:
 ```text
 sipevita-public/
 ├── backend/
+    ├── database/
 ├── frontend/
 ├── blockchain/
 │   ├── sipevita-chaincode/
 │   └── sipevita-raft-network/
-├── backend/database/
-└── docs/
+
 ```
 
 Fungsi utamanya:
