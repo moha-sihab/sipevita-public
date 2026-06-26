@@ -141,7 +141,7 @@ Port yang perlu kosong untuk konfigurasi lokal ini:
 Clone repository:
 
 ```bash
-git clone <URL_REPOSITORY_SIPEVITA> sipevita-public
+git clone https://github.com/moha-sihab/sipevita-public.git sipevita-public
 cd sipevita-public
 ```
 
@@ -171,9 +171,10 @@ cd ../..
 
 ## 6. Konfigurasi Supabase/PostgreSQL
 
-Pertama, buat project Supabase. Setelah project siap, kemudian buka
-dashboard Supabase lalu masuk ke **Project Settings > API**.
-
+Pertama, buat project di [Supabase](https://supabase.com/). Setelah
+project siap, buka [dashboard Supabase](https://supabase.com/dashboard)
+lalu masuk ke **Project Settings > API**. Dokumentasi resmi Supabase bisa
+dibaca di [Supabase Docs](https://supabase.com/docs).
 Dari halaman itu ambil:
 
 - `Project URL`
@@ -237,8 +238,13 @@ VALUES
 
 ## 7. Konfigurasi Pinata Private IPFS
 
-Backend SIPEVITA memakai Pinata private network. Nilai yang perlu diisi di
-`backend/.env`:
+Backend SIPEVITA memakai Pinata private network. Pertama, buka
+[website Pinata](https://pinata.cloud/) lalu masuk ke
+[Pinata App](https://app.pinata.cloud/) untuk menyiapkan API key/JWT dan
+gateway private. Dokumentasi resmi Pinata bisa dibaca di
+[Pinata Docs](https://docs.pinata.cloud/).
+
+Setelah credential Pinata siap, tambahkan konfigurasi berikut di `backend/.env`:
 
 ```env
 PINATA_JWT=<your-pinata-jwt>
@@ -256,6 +262,22 @@ ke Pinata private upload, lalu backend membuat signed URL saat file perlu
 dipratinjau atau diunduh.
 
 ## 8. Konfigurasi Cloudflare Turnstile
+
+SIPEVITA memakai Cloudflare Turnstile untuk melindungi login dan endpoint
+publik. Pertama, buka
+[website Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/)
+lalu masuk ke [Cloudflare Dashboard](https://dash.cloudflare.com/). Di
+dashboard, klik menu **Turnstile**, membuat widget baru, mengisi nama
+widget, domain yang diizinkan, dan memilih mode validasi sesuai kebutuhan
+development. Setelah widget dibuat, Cloudflare akan menampilkan `site key`
+untuk frontend dan `secret key` untuk backend.
+
+Dokumentasi resmi Turnstile bisa dibaca di
+[Cloudflare Turnstile Docs](https://developers.cloudflare.com/turnstile/),
+termasuk panduan
+[client-side rendering](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)
+dan
+[server-side validation](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
 
 Untuk backend:
 
