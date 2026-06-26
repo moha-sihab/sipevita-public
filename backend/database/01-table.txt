@@ -1,0 +1,108 @@
+
+
+CREATE TABLE public.pengguna (
+  id_pengguna integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  username character varying NOT NULL UNIQUE,
+  password_hash text NOT NULL,
+  peran USER-DEFINED NOT NULL,
+  nama_lengkap character varying NOT NULL,
+  status_aktif boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pengguna_pkey PRIMARY KEY (id_pengguna)
+);
+CREATE TABLE public.pengajuan (
+  id_pengajuan integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  id_notaris integer NOT NULL,
+  id_reviewer integer,
+  nomor_sertifikat character varying NOT NULL,
+  nib character varying,
+  lokasi_tanah character varying,
+  luas_tanah numeric,
+  nomor_akta character varying,
+  tanggal_akta date,
+  jenis_transaksi USER-DEFINED NOT NULL,
+  data_sertifikat jsonb,
+  status USER-DEFINED NOT NULL DEFAULT 'DIAJUKAN'::status_pengajuan_enum,
+  tanggal_pengajuan timestamp with time zone NOT NULL DEFAULT now(),
+  catatan_reviewer text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  manifest_cid text,
+  CONSTRAINT pengajuan_pkey PRIMARY KEY (id_pengajuan),
+  CONSTRAINT fk_pengajuan_notaris FOREIGN KEY (id_notaris) REFERENCES public.pengguna(id_pengguna),
+  CONSTRAINT fk_pengajuan_reviewer FOREIGN KEY (id_reviewer) REFERENCES public.pengguna(id_pengguna)
+);
+CREATE TABLE public.pihak_transaksi (
+  id_pihak integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  id_pengajuan integer NOT NULL,
+  peran USER-DEFINED NOT NULL,
+  nama character varying NOT NULL,
+  nomor_identitas character varying,
+  alamat text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pihak_transaksi_pkey PRIMARY KEY (id_pihak),
+  CONSTRAINT fk_pihak_pengajuan FOREIGN KEY (id_pengajuan) REFERENCES public.pengajuan(id_pengajuan)
+);
+CREATE TABLE public.dokumen (
+  id_dokumen integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  id_pengajuan integer NOT NULL,
+  nama_file character varying NOT NULL,
+  hash_file character varying NOT NULL,
+  cid_ipfs character varying,
+  tanggal_unggah timestamp with time zone NOT NULL DEFAULT now(),
+  jenis_dokumen text,
+  nama_file_asli text,
+  mime_type text,
+  ukuran_file bigint,
+  sha256 text,
+  pinata_file_id text,
+  status_upload text NOT NULL DEFAULT 'PENDING'::text CHECK (status_upload = ANY (ARRAY['PENDING'::text, 'UPLOADING'::text, 'UPLOADED'::text, 'FAILED'::text, 'SUPERSEDED'::text])),
+  tanggal_upload timestamp with time zone,
+  diunggah_oleh integer,
+  is_active boolean NOT NULL DEFAULT true,
+  updated_at timestamp with time zone,
+  deleted_at timestamp with time zone,
+  CONSTRAINT dokumen_pkey PRIMARY KEY (id_dokumen),
+  CONSTRAINT fk_dokumen_pengajuan FOREIGN KEY (id_pengajuan) REFERENCES public.pengajuan(id_pengajuan),
+  CONSTRAINT dokumen_diunggah_oleh_fkey FOREIGN KEY (diunggah_oleh) REFERENCES public.pengguna(id_pengguna)
+);
+CREATE TABLE public.transaksi_blockchain (
+  id_transaksi integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  id_pengajuan integer NOT NULL UNIQUE,
+  id_blok character varying,
+  status_konfirmasi USER-DEFINED NOT NULL DEFAULT 'PENDING'::status_konfirmasi_enum,
+  hash_transaksi character varying,
+  timestamp_blockchain timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT transaksi_blockchain_pkey PRIMARY KEY (id_transaksi),
+  CONSTRAINT fk_transaksi_pengajuan FOREIGN KEY (id_pengajuan) REFERENCES public.pengajuan(id_pengajuan)
+);
+CREATE TABLE public.log_aktivitas (
+  id_log integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  id_pengguna integer,
+  jenis_aksi character varying NOT NULL,
+  waktu_aksi timestamp with time zone NOT NULL DEFAULT now(),
+  ip_address character varying,
+  detail_aksi text,
+  previous_hash character varying,
+  current_hash character varying,
+  CONSTRAINT log_aktivitas_pkey PRIMARY KEY (id_log),
+  CONSTRAINT fk_log_pengguna FOREIGN KEY (id_pengguna) REFERENCES public.pengguna(id_pengguna)
+);
+CREATE TABLE public.aset_tanah (
+  id_aset integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  nomor_sertifikat character varying NOT NULL UNIQUE,
+  nib character varying,
+  lokasi_tanah character varying,
+  luas_tanah numeric,
+  status_tanah USER-DEFINED NOT NULL DEFAULT 'AKTIF'::status_tanah_enum,
+  hash_pemilik_aktif character varying,
+  hash_dokumen_aktif character varying,
+  lokasi_hash character varying,
+  cid_ipfs_aktif character varying,
+  id_pengajuan_terakhir integer,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT aset_tanah_pkey PRIMARY KEY (id_aset),
+  CONSTRAINT fk_aset_pengajuan_terakhir FOREIGN KEY (id_pengajuan_terakhir) REFERENCES public.pengajuan(id_pengajuan)
+);

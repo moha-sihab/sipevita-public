@@ -16,6 +16,8 @@ wallet/
 *.pem
 *.key
 *.txt
+!backend/database/
+!backend/database/*.txt
 *.md
 
 !README.md

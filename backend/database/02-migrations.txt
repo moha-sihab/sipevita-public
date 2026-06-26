@@ -1,0 +1,95 @@
+
+
+BEGIN;
+
+-- ── dokumen table extensions ──────────────────────────────────────────────────
+-- Column order follows the upload flow: identification → file metadata → audit.
+
+ALTER TABLE dokumen
+  -- Type of document (e.g. SERTIFIKAT_TANAH, AKTA_JUAL_BELI).
+  -- Nullable to keep existing rows intact.
+  ADD COLUMN IF NOT EXISTS jenis_dokumen     TEXT,
+
+  -- Original filename as provided by the uploader (sanitized server-side).
+  ADD COLUMN IF NOT EXISTS nama_file_asli    TEXT,
+
+  -- MIME type validated by the server (application/pdf, image/jpeg, image/png).
+  ADD COLUMN IF NOT EXISTS mime_type         TEXT,
+
+  -- File size in bytes.
+  ADD COLUMN IF NOT EXISTS ukuran_file       BIGINT,
+
+  -- SHA-256 hex digest of the raw bytes, computed before upload.
+  -- Used for local integrity verification; different from the IPFS CID.
+  ADD COLUMN IF NOT EXISTS sha256            TEXT,
+
+  -- Pinata internal file ID returned after a successful private upload.
+  ADD COLUMN IF NOT EXISTS pinata_file_id    TEXT,
+
+  -- Upload lifecycle state.
+  -- PENDING    : row created, file not yet submitted
+  -- UPLOADING  : upload in progress
+  -- UPLOADED   : private Pinata upload succeeded, cid_ipfs is populated
+  -- FAILED     : upload failed; cid_ipfs is null
+  -- SUPERSEDED : replaced by a newer upload of the same document slot
+  ADD COLUMN IF NOT EXISTS status_upload     TEXT NOT NULL DEFAULT 'PENDING',
+
+  -- Timestamp of the last successful upload.
+  ADD COLUMN IF NOT EXISTS tanggal_upload    TIMESTAMPTZ,
+
+  -- Who uploaded the file. References pengguna.id_pengguna.
+  -- On DELETE SET NULL so that orphaned uploads are not hard-deleted.
+  ADD COLUMN IF NOT EXISTS diunggah_oleh     INTEGER
+    REFERENCES pengguna(id_pengguna) ON DELETE SET NULL,
+
+  -- Soft-delete flag. FALSE means the row is logically deleted (superseded or removed).
+  ADD COLUMN IF NOT EXISTS is_active         BOOLEAN NOT NULL DEFAULT TRUE,
+
+  -- Row-level timestamp for updates (set by application, not a trigger).
+  ADD COLUMN IF NOT EXISTS updated_at        TIMESTAMPTZ,
+
+  -- Soft-delete timestamp.
+  ADD COLUMN IF NOT EXISTS deleted_at        TIMESTAMPTZ;
+
+-- ── status_upload check constraint ───────────────────────────────────────────
+-- Guard against invalid status values written by application bugs.
+-- Added separately so we can use IF NOT EXISTS (constraint name).
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name = 'dokumen'
+      AND constraint_name = 'chk_dokumen_status_upload'
+  ) THEN
+    ALTER TABLE dokumen
+      ADD CONSTRAINT chk_dokumen_status_upload
+      CHECK (status_upload IN ('PENDING', 'UPLOADING', 'UPLOADED', 'FAILED', 'SUPERSEDED'));
+  END IF;
+END $$;
+
+-- ── pengajuan table extension ─────────────────────────────────────────────────
+-- CID of the private manifest JSON that lists all successfully uploaded documents.
+-- Populated after all documents for an application have been uploaded.
+-- The approval flow reads this column; it must not be null at approval time.
+ALTER TABLE pengajuan
+  ADD COLUMN IF NOT EXISTS manifest_cid TEXT;
+
+-- ── indexes ───────────────────────────────────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS idx_dokumen_id_pengajuan
+  ON dokumen (id_pengajuan);
+
+CREATE INDEX IF NOT EXISTS idx_dokumen_cid_ipfs
+  ON dokumen (cid_ipfs);
+
+CREATE INDEX IF NOT EXISTS idx_dokumen_sha256
+  ON dokumen (sha256);
+
+CREATE INDEX IF NOT EXISTS idx_dokumen_status_upload
+  ON dokumen (status_upload);
+
+CREATE INDEX IF NOT EXISTS idx_pengajuan_manifest_cid
+  ON pengajuan (manifest_cid);
+
+COMMIT;
